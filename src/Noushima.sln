@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sandbox", "Sandbox\Sandbox.csproj", "{D03A30A8-175F-41DC-B88F-88AD6165992D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FarmApi", "FarmApi\FarmApi.csproj", "{F2B470E6-484B-4EF3-8FB5-6DA9C2344855}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{D03A30A8-175F-41DC-B88F-88AD6165992D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D03A30A8-175F-41DC-B88F-88AD6165992D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D03A30A8-175F-41DC-B88F-88AD6165992D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2B470E6-484B-4EF3-8FB5-6DA9C2344855}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2B470E6-484B-4EF3-8FB5-6DA9C2344855}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2B470E6-484B-4EF3-8FB5-6DA9C2344855}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2B470E6-484B-4EF3-8FB5-6DA9C2344855}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
