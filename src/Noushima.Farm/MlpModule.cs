@@ -8,7 +8,7 @@ public sealed class MlpModule : Module<Tensor, Tensor>
 {
     private readonly Module<Tensor, Tensor>[] layers;
 
-    public MlpModule(Mlp dto) : base(string.Empty)
+    public MlpModule(BotMlpModel dto) : base(string.Empty)
     {
         layers = new Module<Tensor, Tensor>[dto.Layers.Length];
         var inputSize = dto.InputSize;
@@ -37,7 +37,7 @@ public sealed class MlpLayerModule : Module<Tensor, Tensor>
     private readonly Tensor weights;
     private readonly Tensor bias;
 
-    public MlpLayerModule(MlpLayer dto, int inputSize) : base(string.Empty)
+    public MlpLayerModule(BotMlpModel.Layer dto, int inputSize) : base(string.Empty)
     {
         var outputSize = dto.Bias.Length;
         var flatWeights = dto.Weights.SelectMany(w => w).ToArray();
