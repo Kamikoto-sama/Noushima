@@ -4,11 +4,11 @@ using static TorchSharp.torch.nn.functional;
 
 namespace Noushima.Farm;
 
-public sealed class MlpModule : Module<Tensor, Tensor>
+internal sealed class MlpModule : Module<Tensor, Tensor>
 {
     private readonly Module<Tensor, Tensor>[] layers;
 
-    public MlpModule(BotMlpModel dto) : base(string.Empty)
+    public MlpModule(MlpModel dto) : base(string.Empty)
     {
         layers = new Module<Tensor, Tensor>[dto.Layers.Length];
         var inputSize = dto.InputSize;
@@ -30,19 +30,21 @@ public sealed class MlpModule : Module<Tensor, Tensor>
     }
 
     public override Tensor forward(Tensor input) => Sequential(layers).forward(input);
+
+    public Tensor Inference(Tensor input) => forward(input);
 }
 
-public sealed class MlpLayerModule : Module<Tensor, Tensor>
+internal sealed class MlpLayerModule : Module<Tensor, Tensor>
 {
     private readonly Tensor weights;
     private readonly Tensor bias;
 
-    public MlpLayerModule(BotMlpModel.Layer dto, int inputSize) : base(string.Empty)
+    public MlpLayerModule(MlpModel.Layer dto, int inputSize) : base(string.Empty)
     {
         var outputSize = dto.Bias.Length;
         var flatWeights = dto.Weights.SelectMany(w => w).ToArray();
-        weights = tensor(flatWeights, outputSize, inputSize, device: CPU).transpose(0, 1);
-        bias = tensor(dto.Bias, device: CPU);
+        weights = tensor(flatWeights, outputSize, inputSize, device: FarmConstants.Device).transpose(0, 1);
+        bias = tensor(dto.Bias, device: FarmConstants.Device);
 
         RegisterComponents();
     }

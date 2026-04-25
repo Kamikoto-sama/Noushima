@@ -1,6 +1,6 @@
 ﻿namespace Noushima.Farm;
 
-public class BotMlpModel
+public class MlpModel
 {
     public int InputSize { get; init; }
     public required Layer[] Layers { get; init; }
