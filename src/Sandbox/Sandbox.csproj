@@ -7,9 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Kami.Utils" Version="8.0.4" />
-      <PackageReference Include="TorchSharp" Version="0.105.1" />
-      <PackageReference Include="TorchSharp-cuda-windows" Version="0.105.1" />
+      <ProjectReference Include="..\Noushima.Farm\Noushima.Farm.csproj" />
     </ItemGroup>
 
 </Project>

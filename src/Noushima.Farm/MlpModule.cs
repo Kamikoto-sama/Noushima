@@ -2,23 +2,28 @@ using static TorchSharp.torch;
 using static TorchSharp.torch.nn;
 using static TorchSharp.torch.nn.functional;
 
-namespace FarmApi;
+namespace Noushima.Farm;
 
 public sealed class MlpModule : Module<Tensor, Tensor>
 {
     private readonly Module<Tensor, Tensor>[] layers;
 
-    public MlpModule(MlpDto dto) : base(string.Empty)
+    public MlpModule(Mlp dto) : base(string.Empty)
     {
         layers = new Module<Tensor, Tensor>[dto.Layers.Length];
-        var inputSize = dto.Input;
+        var inputSize = dto.InputSize;
         var layersCount = dto.Layers.Length;
 
         for (var layerIndex = 0; layerIndex < layersCount; layerIndex++)
         {
-            var layer = new MlpLayerModule(dto.Layers[layerIndex], inputSize);
-            layers[layerIndex] = layer;
-            inputSize = dto.Layers[layerIndex].Bias.Length;
+            var layer = dto.Layers[layerIndex];
+            if (layer.Bias.Length != layer.Weights.Length)
+                throw new InvalidOperationException($"Layer {layerIndex}: bias size ({layer.Bias.Length}), " +
+                                                    $"doesnt match weights count ({layer.Weights.Length})");
+
+            var layerModule = new MlpLayerModule(layer, inputSize);
+            layers[layerIndex] = layerModule;
+            inputSize = layer.Bias.Length;
         }
 
         RegisterComponents();
@@ -32,12 +37,12 @@ public sealed class MlpLayerModule : Module<Tensor, Tensor>
     private readonly Tensor weights;
     private readonly Tensor bias;
 
-    public MlpLayerModule(MlpLayerDto dto, int inputSize) : base(string.Empty)
+    public MlpLayerModule(MlpLayer dto, int inputSize) : base(string.Empty)
     {
         var outputSize = dto.Bias.Length;
         var flatWeights = dto.Weights.SelectMany(w => w).ToArray();
-        weights = tensor(flatWeights, outputSize, inputSize, device: CUDA).transpose(0, 1);
-        bias = tensor(dto.Bias, device: CUDA);
+        weights = tensor(flatWeights, outputSize, inputSize, device: CPU).transpose(0, 1);
+        bias = tensor(dto.Bias, device: CPU);
 
         RegisterComponents();
     }
