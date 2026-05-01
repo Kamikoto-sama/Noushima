@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sandbox", "Sandbox\Sandbox.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Noushima.Farm", "Noushima.Farm\Noushima.Farm.csproj", "{93F345DA-6EF2-4ECC-9D86-EE49DA2C2C2F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Noushima.Island", "Noushima.Island\Noushima.Island.csproj", "{95FA06BE-FDA0-4C64-A40A-644C7184B16E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{93F345DA-6EF2-4ECC-9D86-EE49DA2C2C2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93F345DA-6EF2-4ECC-9D86-EE49DA2C2C2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93F345DA-6EF2-4ECC-9D86-EE49DA2C2C2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95FA06BE-FDA0-4C64-A40A-644C7184B16E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95FA06BE-FDA0-4C64-A40A-644C7184B16E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95FA06BE-FDA0-4C64-A40A-644C7184B16E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95FA06BE-FDA0-4C64-A40A-644C7184B16E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
