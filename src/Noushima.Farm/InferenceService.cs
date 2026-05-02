@@ -19,7 +19,7 @@ public class InferenceService : IInferenceService, IDisposable
             module.Dispose();
     }
 
-    public float[] Inference(Guid modelId, float[] input)
+    public float[] Infer(Guid modelId, float[] input)
     {
         if (!models.TryGetValue(modelId, out var module))
             throw new InvalidOperationException($"Model {modelId} has not loaded");
