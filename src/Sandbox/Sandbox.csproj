@@ -8,6 +8,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Noushima.Farm\Noushima.Farm.csproj" />
+      <ProjectReference Include="..\Noushima.Island\Noushima.Island.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="Maps/**/*.txt" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
 </Project>

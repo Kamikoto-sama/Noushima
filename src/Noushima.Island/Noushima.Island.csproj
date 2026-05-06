@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -6,8 +6,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\Noushima.Farm\Noushima.Farm.csproj" />
-    </ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\Noushima.Farm\Noushima.Farm.csproj" />
+	</ItemGroup>
 
 </Project>
