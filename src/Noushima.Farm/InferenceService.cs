@@ -10,7 +10,8 @@ public class InferenceService : IInferenceService, IDisposable
     public void LoadModel(Guid modelId, MlpModel mlpModel)
     {
         var module = new MlpModule(mlpModel);
-        models[modelId] = module;
+        if (!models.TryAdd(modelId, module))
+            throw new InvalidOperationException($"Model {modelId} has already been loaded");
     }
 
     public void RemoveModel(Guid modelId)
@@ -22,7 +23,7 @@ public class InferenceService : IInferenceService, IDisposable
     public float[] Infer(Guid modelId, float[] input)
     {
         if (!models.TryGetValue(modelId, out var module))
-            throw new InvalidOperationException($"Model {modelId} has not loaded");
+            throw new InvalidOperationException($"Model {modelId} has not been loaded");
         var inputVector = torch.tensor(input, device: FarmConstants.Device);
         var outputVector = module.Inference(inputVector);
         return outputVector.to(torch.ScalarType.Float32).data<float>().ToArray();
