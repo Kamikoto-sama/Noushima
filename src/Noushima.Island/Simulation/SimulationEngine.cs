@@ -19,10 +19,13 @@ public sealed class SimulationEngine
     private readonly IFarmClient farmClient;
     private readonly IMapProvider mapProvider;
     private readonly List<Bot> bots = [];
+    private SimulationSnapshot? snapshot;
     public IslandConfig Config { get; }
     public WorldMap Map { get; private set; } = null!;
     public IReadOnlyList<Bot> Bots => bots;
     public int GenerationNumber { get; private set; }
+    public int GenTickNumber { get; private set; }
+    public SimulationSnapshot? Snapshot => Volatile.Read(ref snapshot);
     public int InputSize => envParamRegistry.TotalSize;
     public int OutputSize => actionRegistry.TotalSize;
 
@@ -50,23 +53,26 @@ public sealed class SimulationEngine
         PlaceBots(bots);
         resourceSpawner.Initialize(Map);
         GenerationNumber = 1;
+        GenTickNumber = 0;
+        PublishSnapshot();
     }
 
     public void RunTick()
     {
         EnsureInitialized();
-        var activeBots = bots.Where(bot => bot.Alive).ToArray();
+        var activeBots = bots.Where(bot => bot.Alive).OrderBy(bot => bot.Id).ToArray();
         foreach (var bot in activeBots)
             bot.BeginTurn();
 
-        var executionContext = new BotActionContext(Map, Config);
+        var context = new BotActionContext(Map, Config);
+
         foreach (var bot in activeBots)
         {
             var input = envParamRegistry.Build(bot, Map);
             var intentions = farmClient.Infer(bot.Brain, input);
             bot.SetIntentions(intentions);
 
-            actionRegistry.Execute(bot, intentions, executionContext);
+            actionRegistry.Execute(bot, intentions, context);
 
             bot.ChangeEnergy(-GetPassiveDrain(bot), Config.MaxBotEnergy);
             if (!bot.Alive)
@@ -79,9 +85,12 @@ public sealed class SimulationEngine
                 Map.SetEntity(bot.Position.X, bot.Position.Y, null);
         }
 
+        GenTickNumber++;
         resourceSpawner.Update(Map);
         if (bots.Count(bot => bot.Alive) <= Config.SurvivorThreshold)
             ResetGeneration();
+
+        PublishSnapshot();
     }
 
     private void ResetGeneration()
@@ -110,6 +119,7 @@ public sealed class SimulationEngine
         PlaceBots(bots);
         resourceSpawner.Initialize(Map);
         GenerationNumber++;
+        GenTickNumber = 0;
     }
 
     private void ResetWorld()
@@ -146,5 +156,33 @@ public sealed class SimulationEngine
             return;  
 
         Initialize();
+    }
+
+    private void PublishSnapshot()
+    {
+        var width = Map.Width;
+        var height = Map.Height;
+        var map = new CellSnapshot[width, height];
+
+        for (var x = 0; x < width; x++)
+        {
+            for (var y = 0; y < height; y++)
+            {
+                var entity = Map.GetCell(x, y).Entity;
+                map[x, y] = new CellSnapshot
+                {
+                    Type = entity?.Type,
+                    BotSnapshot = entity is Bot bot
+                        ? new BotSnapshot
+                        {
+                            Direction = bot.Rotation,
+                            Energy = (int)bot.Energy,
+                        }
+                        : null
+                };
+            }
+        }
+
+        Volatile.Write(ref snapshot, new SimulationSnapshot(map, GenerationNumber));
     }
 }
