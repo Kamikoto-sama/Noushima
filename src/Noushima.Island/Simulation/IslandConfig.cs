@@ -14,8 +14,8 @@ public sealed class IslandConfig
     public float ComplexityNeuronsCountFactor { get; init; } = 0.5f;
     public float ComplexityLinksCountFactor { get; init; } = 0.01f;
 
-    public int MaxFoodCount { get; init; } = 80;
-    public int MaxPoisonCount { get; init; } = 40;
+    public int MaxFoodCount { get; init; } = 64;
+    public int MaxPoisonCount { get; init; } = 32;
     public float SpawnChancePerTick { get; init; } = 1f;
     public float FoodEnergyGain { get; init; } = 10f;
     public float PoisonEnergyPenalty { get; init; } = 5f;

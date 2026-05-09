@@ -15,7 +15,7 @@ public sealed class GenomeMutator(
 
         MutateWeights(layers, multiplier);
         if (random.CheckChance(config.AddNeuronChance * multiplier) && layers.Count > 1)
-            AddNeuron(layers.Take(layers.Count - 1).ToArray());
+            AddNeuron(layers);
         else if (random.CheckChance(config.RemoveNeuronChance * multiplier))
             RemoveNeuron(layers);
         if (random.CheckChance(config.AddLayerChance * multiplier))

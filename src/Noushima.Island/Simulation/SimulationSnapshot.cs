@@ -2,19 +2,20 @@ using Noushima.Island.Map;
 
 namespace Noushima.Island.Simulation;
 
-public class SimulationSnapshot(CellSnapshot[,] map, int generationNumber)
+public sealed class SimulationSnapshot(CellSnapshot[,] map, int generationNumber, int botsAlive)
 {
     public CellSnapshot[,] Map { get; } = map;
     public int GenerationNumber { get; } = generationNumber;
+    public int BotsAlive { get; } = botsAlive;
 }
 
-public class CellSnapshot
+public sealed class CellSnapshot
 {
     public required WorldObjectType? Type { get; init; }
     public BotSnapshot? BotSnapshot { get; init; }
 }
 
-public class BotSnapshot
+public sealed class BotSnapshot
 {
     public required Direction Direction { get; init; }
     public required int Energy { get; init; }

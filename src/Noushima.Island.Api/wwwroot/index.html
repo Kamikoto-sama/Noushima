@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Noushima Island</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <main class="app-shell">
+        <section class="hud" aria-live="polite">
+            <div class="hud-group">
+                <span class="hud-label">Generation</span>
+                <strong id="generationValue">-</strong>
+            </div>
+            <div class="hud-group">
+                <span class="hud-label">Bots alive</span>
+                <strong id="botsAliveValue">-</strong>
+            </div>
+            <label class="toggle-control" for="speedUpToggle">
+                <input id="speedUpToggle" type="checkbox">
+                <span>Speed up</span>
+            </label>
+        </section>
+        <section class="map-frame" aria-label="Simulation map">
+            <canvas id="simulationCanvas"></canvas>
+        </section>
+    </main>
+    <script src="/app.js"></script>
+</body>
+</html>

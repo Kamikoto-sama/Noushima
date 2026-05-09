@@ -18,7 +18,10 @@ public sealed class SimulationEngine
     private readonly ResourceSpawner resourceSpawner;
     private readonly IFarmClient farmClient;
     private readonly IMapProvider mapProvider;
+    private readonly SimulationSpeedControl speedControl;
+    private readonly object stateLock = new();
     private readonly List<Bot> bots = [];
+    private bool initialized;
     private SimulationSnapshot? snapshot;
     public IslandConfig Config { get; }
     public WorldMap Map { get; private set; } = null!;
@@ -29,7 +32,11 @@ public sealed class SimulationEngine
     public int InputSize => envParamRegistry.TotalSize;
     public int OutputSize => actionRegistry.TotalSize;
 
-    public SimulationEngine(IslandConfig config, IInferenceService inferenceService, IMapProvider mapProvider)
+    public SimulationEngine(
+        IslandConfig config,
+        IInferenceService inferenceService,
+        IMapProvider mapProvider,
+        SimulationSpeedControl speedControl)
     {
         Config = config;
         random = config.RandomSeed.HasValue ? new Random(config.RandomSeed.Value) : new Random();
@@ -41,9 +48,68 @@ public sealed class SimulationEngine
         resourceSpawner = new ResourceSpawner(config, random);
         farmClient = new FarmClient(inferenceService);
         this.mapProvider = mapProvider;
+        this.speedControl = speedControl;
     }
 
     public void Initialize()
+    {
+        lock (stateLock)
+            InitializeCore();
+    }
+
+    public void EnsureInitialized()
+    {
+        lock (stateLock)
+        {
+            if (initialized)
+                return;
+
+            InitializeCore();
+        }
+    }
+
+    public void RunTick()
+    {
+        lock (stateLock)
+        {
+            if (!initialized)
+                InitializeCore();
+
+            var activeBots = bots.Where(bot => bot.Alive).OrderBy(bot => bot.Id).ToArray();
+            foreach (var bot in activeBots)
+                bot.BeginTurn();
+
+            var context = new BotActionContext(Map, Config);
+
+            foreach (var bot in activeBots)
+            {
+                var input = envParamRegistry.Build(bot, Map);
+                var intentions = farmClient.Infer(bot.Brain, input);
+                bot.SetIntentions(intentions);
+
+                actionRegistry.Execute(bot, intentions, context);
+
+                bot.ChangeEnergy(-GetPassiveDrain(bot), Config.MaxBotEnergy);
+                if (!bot.Alive)
+                {
+                    Map.SetEntity(bot.Position.X, bot.Position.Y, null);
+                    continue;
+                }
+
+                if (!bot.Alive)
+                    Map.SetEntity(bot.Position.X, bot.Position.Y, null);
+            }
+
+            GenTickNumber++;
+            resourceSpawner.Update(Map);
+            if (bots.Count(bot => bot.Alive) <= Config.SurvivorThreshold)
+                ResetGeneration();
+
+            PublishSnapshot();
+        }
+    }
+
+    private void InitializeCore()
     {
         ResetWorld();
         bots.Clear();
@@ -55,42 +121,7 @@ public sealed class SimulationEngine
         GenerationNumber = 1;
         GenTickNumber = 0;
         PublishSnapshot();
-    }
-
-    public void RunTick()
-    {
-        EnsureInitialized();
-        var activeBots = bots.Where(bot => bot.Alive).OrderBy(bot => bot.Id).ToArray();
-        foreach (var bot in activeBots)
-            bot.BeginTurn();
-
-        var context = new BotActionContext(Map, Config);
-
-        foreach (var bot in activeBots)
-        {
-            var input = envParamRegistry.Build(bot, Map);
-            var intentions = farmClient.Infer(bot.Brain, input);
-            bot.SetIntentions(intentions);
-
-            actionRegistry.Execute(bot, intentions, context);
-
-            bot.ChangeEnergy(-GetPassiveDrain(bot), Config.MaxBotEnergy);
-            if (!bot.Alive)
-            {
-                Map.SetEntity(bot.Position.X, bot.Position.Y, null);
-                continue;
-            }
-
-            if (!bot.Alive)
-                Map.SetEntity(bot.Position.X, bot.Position.Y, null);
-        }
-
-        GenTickNumber++;
-        resourceSpawner.Update(Map);
-        if (bots.Count(bot => bot.Alive) <= Config.SurvivorThreshold)
-            ResetGeneration();
-
-        PublishSnapshot();
+        initialized = true;
     }
 
     private void ResetGeneration()
@@ -150,16 +181,16 @@ public sealed class SimulationEngine
 
     private float GetPassiveDrain(Bot bot) => bot.Brain.Complexity * Config.ComplexityDrainFactor;
 
-    private void EnsureInitialized()
-    {
-        if (Map is not null)
-            return;  
-
-        Initialize();
-    }
-
     private void PublishSnapshot()
     {
+        var botsAlive = bots.Count(bot => bot.Alive);
+
+        if (speedControl.IsEnabled)
+        {
+            Volatile.Write(ref snapshot, new SimulationSnapshot(Snapshot!.Map, GenerationNumber, botsAlive));
+            return;
+        }
+
         var width = Map.Width;
         var height = Map.Height;
         var map = new CellSnapshot[width, height];
@@ -183,6 +214,6 @@ public sealed class SimulationEngine
             }
         }
 
-        Volatile.Write(ref snapshot, new SimulationSnapshot(map, GenerationNumber));
+        Volatile.Write(ref snapshot, new SimulationSnapshot(map, GenerationNumber, botsAlive));
     }
 }

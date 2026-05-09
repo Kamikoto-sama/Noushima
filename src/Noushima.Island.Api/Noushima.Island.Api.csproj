@@ -13,4 +13,18 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Noushima.Island\Noushima.Island.csproj" />
+      <ProjectReference Include="..\Noushima.Farm\Noushima.Farm.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Maps\default-map.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Maps\map.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
