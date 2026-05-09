@@ -29,7 +29,7 @@ public sealed class Bot(Point position, Direction rotation, float energy, Genome
 
     public void SetRotation(Direction rotation) => Rotation = rotation;
 
-    public void SetOutputs(float[] outputs) => LastOutputs = outputs;
+    public void SetIntentions(float[] outputs) => LastOutputs = outputs;
 
     public void SetEnergy(float energy, float maxEnergy) => Energy = Math.Clamp(energy, 0f, maxEnergy);
 

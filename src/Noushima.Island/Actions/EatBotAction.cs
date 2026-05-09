@@ -13,7 +13,7 @@ internal sealed class EatBotAction : IBotAction
 
     public int Size => 1;
 
-    public void Execute(Bot bot, ReadOnlySpan<float> intentions, BotActionExecutionContext context)
+    public void Execute(Bot bot, ReadOnlySpan<float> intentions, BotActionContext context)
     {
         if (intentions[0] <= 0f)
             return;

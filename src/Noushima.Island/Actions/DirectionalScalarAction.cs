@@ -13,7 +13,7 @@ internal abstract class DirectionalScalarAction(string name) : IBotAction
 
     public int Size => 1;
 
-    public void Execute(Bot bot, ReadOnlySpan<float> intentions, BotActionExecutionContext context)
+    public void Execute(Bot bot, ReadOnlySpan<float> intentions, BotActionContext context)
     {
         if (!TryGetRelativeDirection(intentions, out var relativeDirection))
             return;
@@ -21,7 +21,7 @@ internal abstract class DirectionalScalarAction(string name) : IBotAction
         Execute(bot, relativeDirection, context);
     }
 
-    protected abstract void Execute(Bot bot, Direction relativeDirection, BotActionExecutionContext context);
+    protected abstract void Execute(Bot bot, Direction relativeDirection, BotActionContext context);
 
     private static bool TryGetRelativeDirection(ReadOnlySpan<float> output, out Direction direction)
     {

@@ -7,6 +7,8 @@ public sealed class WorldMap
 {
     private readonly Cell[,] grid;
     private readonly Random random;
+    public int Width { get; }
+    public int Height { get; }
 
     public WorldMap(WorldObjectType?[,] layout, Random random)
     {
@@ -15,10 +17,6 @@ public sealed class WorldMap
         Width = grid.GetLength(0);
         Height = grid.GetLength(1);
     }
-
-    public int Width { get; }
-
-    public int Height { get; }
 
     private static Cell[,] BuildGrid(WorldObjectType?[,] layout)
     {

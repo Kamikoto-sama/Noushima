@@ -23,7 +23,6 @@ public sealed class SimulationEngine
     public WorldMap Map { get; private set; } = null!;
     public IReadOnlyList<Bot> Bots => bots;
     public int GenerationNumber { get; private set; }
-    public int GenTickNumber { get; private set; }
     public int InputSize => envParamRegistry.TotalSize;
     public int OutputSize => actionRegistry.TotalSize;
 
@@ -51,29 +50,23 @@ public sealed class SimulationEngine
         PlaceBots(bots);
         resourceSpawner.Initialize(Map);
         GenerationNumber = 1;
-        GenTickNumber = 0;
     }
 
     public void RunTick()
     {
         EnsureInitialized();
-        var activeBots = bots.Where(bot => bot.Alive).OrderBy(bot => bot.Id).ToArray();
+        var activeBots = bots.Where(bot => bot.Alive).ToArray();
         foreach (var bot in activeBots)
             bot.BeginTurn();
 
-        var executionContext = new BotActionExecutionContext(Map, Config)
-        {
-            Random = random,
-            AddBot = bot => bots.Add(bot),
-        };
-
+        var executionContext = new BotActionContext(Map, Config);
         foreach (var bot in activeBots)
         {
             var input = envParamRegistry.Build(bot, Map);
-            var output = farmClient.Infer(bot.Brain, input);
-            bot.SetOutputs(output);
+            var intentions = farmClient.Infer(bot.Brain, input);
+            bot.SetIntentions(intentions);
 
-            actionRegistry.Execute(bot, output, executionContext);
+            actionRegistry.Execute(bot, intentions, executionContext);
 
             bot.ChangeEnergy(-GetPassiveDrain(bot), Config.MaxBotEnergy);
             if (!bot.Alive)
@@ -86,7 +79,6 @@ public sealed class SimulationEngine
                 Map.SetEntity(bot.Position.X, bot.Position.Y, null);
         }
 
-        GenTickNumber++;
         resourceSpawner.Update(Map);
         if (bots.Count(bot => bot.Alive) <= Config.SurvivorThreshold)
             ResetGeneration();
@@ -118,7 +110,6 @@ public sealed class SimulationEngine
         PlaceBots(bots);
         resourceSpawner.Initialize(Map);
         GenerationNumber++;
-        GenTickNumber = 0;
     }
 
     private void ResetWorld()

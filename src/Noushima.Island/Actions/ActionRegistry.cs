@@ -20,12 +20,12 @@ public sealed class ActionRegistry
         .ToArray();
     }
 
-    public void Execute(Bot bot, float[] outputs, BotActionExecutionContext context)
+    public void Execute(Bot bot, float[] intetions, BotActionContext context)
     {
         var offset = 0;
         foreach (var action in actions)
         {
-            var actionOutput = outputs.AsSpan(offset, action.Size);
+            var actionOutput = intetions.AsSpan(offset, action.Size);
             if (actionOutput[0] > 0f)
             {
                 action.Execute(bot, actionOutput, context);

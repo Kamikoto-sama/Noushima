@@ -9,7 +9,7 @@ internal sealed class RotateBotAction() : DirectionalScalarAction("rotate")
 
     public override float Cost => 0.4f;
 
-    protected override void Execute(Bot bot, Direction relativeDirection, BotActionExecutionContext context)
+    protected override void Execute(Bot bot, Direction relativeDirection, BotActionContext context)
     {
         bot.SetRotation(bot.Rotation.ApplyRelative(relativeDirection));
     }

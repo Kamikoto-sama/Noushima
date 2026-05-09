@@ -9,7 +9,7 @@ internal sealed class MoveBotAction() : DirectionalScalarAction("move")
 
     public override float Cost => 1f;
 
-    protected override void Execute(Bot bot, Direction relativeDirection, BotActionExecutionContext context)
+    protected override void Execute(Bot bot, Direction relativeDirection, BotActionContext context)
     {
         var moveDirection = bot.Rotation.ApplyRelative(relativeDirection);
         var targetPosition = context.Map.GetAdjacentPosition(bot.Position, moveDirection);

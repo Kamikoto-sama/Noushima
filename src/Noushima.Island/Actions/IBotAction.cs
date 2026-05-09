@@ -10,16 +10,11 @@ public interface IBotAction
     int Order { get; }
     float Cost { get; }
     int Size { get; }
-    void Execute(Bot bot, ReadOnlySpan<float> intentions, BotActionExecutionContext context);
+    void Execute(Bot bot, ReadOnlySpan<float> intentions, BotActionContext context);
 }
 
-public sealed class BotActionExecutionContext(WorldMap map, IslandConfig config)
+public sealed class BotActionContext(WorldMap map, IslandConfig config)
 {
     public WorldMap Map { get; } = map;
     public IslandConfig Config { get; } = config;
-
-    public required Random Random { get; init; }
-
-    public required Action<Bot> AddBot { get; init; }
-
 }
