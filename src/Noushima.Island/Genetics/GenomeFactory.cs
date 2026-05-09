@@ -1,39 +1,44 @@
-using Noushima.Island.Config;
+using Noushima.Island.Simulation;
 
 namespace Noushima.Island.Genetics;
 
-public sealed class GenomeFactory(IslandConfig config, Random random)
+public sealed class GenomeFactory(IslandConfig config, Random random, GenomeComplexityCalculator complexityCalculator)
 {
-    public Genome CreateRandom(int inputSize, int outputSize)
+    public Genome CreateNewGenome(int inputSize, int neuronsCount)
     {
         var layers = new List<GenomeLayer>();
         var currentInput = inputSize;
-        for (var layerIndex = 0; layerIndex < config.InitialHiddenLayerCount; layerIndex++)
+        var layersCount = random.Next(config.MinHiddenLayersCount, config.MaxHiddenLayersCount + 1);
+        for (var layerIndex = 0; layerIndex < layersCount; layerIndex++)
         {
-            layers.Add(CreateLayer(currentInput, config.InitialHiddenLayerSize));
-            currentInput = config.InitialHiddenLayerSize;
+            var layerSize = random.Next(config.MinHiddenLayerSize, config.MaxHiddenLayerSize + 1);
+            var genomeLayer = CreateLayer(currentInput, layerSize, layerIndex == 0);
+            layers.Add(genomeLayer);
+            currentInput = genomeLayer.Size;
         }
 
-        layers.Add(CreateLayer(currentInput, outputSize));
-        return new Genome(Guid.NewGuid(), inputSize, layers);
+        layers.Add(CreateLayer(currentInput, neuronsCount, true));
+        var complexity = complexityCalculator.Calculate(layers);
+        return new Genome(Guid.NewGuid(), layers, complexity);
     }
 
-    internal GenomeLayer CreateLayer(int inputSize, int outputSize)
+    public GenomeLayer CreateLayer(int inputSize, int neuronsCount, bool full)
     {
-        var weights = new float[outputSize][];
-        for (var outputIndex = 0; outputIndex < outputSize; outputIndex++)
-        {
-            weights[outputIndex] = new float[inputSize];
-            for (var inputIndex = 0; inputIndex < inputSize; inputIndex++)
-                weights[outputIndex][inputIndex] = NextWeight();
-        }
-
-        var bias = new float[outputSize];
-        for (var index = 0; index < outputSize; index++)
-            bias[index] = NextWeight();
-
-        return new GenomeLayer(weights, bias);
+        var neurons = new GenomeNeuron[neuronsCount];
+        for (var neuronIndex = 0; neuronIndex < neuronsCount; neuronIndex++)
+            neurons[neuronIndex] = CreateNeuron(inputSize, full);
+        return new GenomeLayer(neurons);
     }
 
-    internal float NextWeight() => (float)(random.NextDouble() * 2d - 1d);
+    public GenomeNeuron CreateNeuron(int inputSize, bool full)
+    {
+        var weights = new float[inputSize];
+        for (var w = 0; w < inputSize; w++)
+            weights[w] = random.CheckChance(config.AddLinkChance) || full ? NextWeight() : 0;
+        if (weights.All(w => w == 0))
+            weights[random.Next(0, inputSize)] = NextWeight();
+        return new GenomeNeuron(weights, 0);
+    }
+
+    public float NextWeight() => (float)(random.NextDouble() * 2d - 1d);
 }

@@ -1,6 +1,6 @@
-using Noushima.Island.Config;
 using Noushima.Island.Entities;
 using Noushima.Island.Map;
+using Noushima.Island.Simulation;
 
 namespace Noushima.Island.Actions;
 
@@ -22,5 +22,4 @@ public sealed class BotActionExecutionContext(WorldMap map, IslandConfig config)
 
     public required Action<Bot> AddBot { get; init; }
 
-    public required Func<Bot, Bot, Bot> CreateChild { get; init; }
 }

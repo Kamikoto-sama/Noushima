@@ -1,31 +1,41 @@
-using Noushima.Farm;
-
 namespace Noushima.Island.Genetics;
 
 public sealed class Genome
 {
     public Guid Id { get; }
-    public int InputSize { get; }
-    public IReadOnlyList<GenomeLayer> Layers { get; }
-    public int OutputSize => Layers[^1].OutputSize;
-    public int Complexity => Layers.Sum(layer => layer.OutputSize + layer.OutputSize * layer.InputSize);
+    public GenomeLayer[] Layers { get; }
+    public int Complexity { get; }
 
-    public Genome(Guid id, int inputSize, IReadOnlyList<GenomeLayer> layers)
+    public Genome(Guid id, IReadOnlyList<GenomeLayer> layers, int complexity)
     {
         Id = id;
-        InputSize = inputSize;
+        Complexity = complexity;
         Layers = layers.Select(layer => layer.Clone()).ToArray();
     }
 
-    public Genome Clone(Guid? id = null) => new(id ?? Guid.NewGuid(), InputSize, Layers);
+    public Genome Clone(Guid? id = null) => new(id ?? Id, Layers, Complexity);
+}
 
-    public MlpModel ToMlpModel() => new()
+public sealed class GenomeLayer
+{
+    public GenomeNeuron[] Neurons { get; }
+    public int Size => Neurons.Length;
+    public int InputSize { get; }
+
+    public GenomeLayer(IEnumerable<GenomeNeuron> neurons)
     {
-        InputSize = InputSize,
-        Layers = Layers.Select(layer => new MlpModel.Layer
-        {
-            Bias = layer.Bias.ToArray(),
-            Weights = layer.Weights.Select(row => row.ToArray()).ToArray(),
-        }).ToArray()
-    };
+        Neurons = neurons.ToArray();
+        InputSize = Neurons.First().Weights.Length;
+    }
+
+    public GenomeLayer Clone() => new(Neurons.Select(n => n.Clone()));
+}
+
+public class GenomeNeuron(IReadOnlyList<float> weights, float bias)
+{
+    public float[] Weights { get; } = weights.ToArray();
+    public float Bias { get; set; } = bias;
+    public int LinksCount { get; } = weights.Count(w => w != 0);
+
+    public GenomeNeuron Clone() => new(Weights, Bias);
 }

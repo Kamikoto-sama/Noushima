@@ -1,6 +1,6 @@
-using Noushima.Island.Config;
 using Noushima.Island.Entities;
 using Noushima.Island.Map;
+using Noushima.Island.Simulation;
 
 namespace Noushima.Island.Environment;
 

@@ -1,7 +1,6 @@
 using System.Drawing;
 using Noushima.Farm;
 using Noushima.Island.Actions;
-using Noushima.Island.Config;
 using Noushima.Island.Entities;
 using Noushima.Island.Environment;
 using Noushima.Island.Genetics;
@@ -16,7 +15,6 @@ public sealed class SimulationEngine
     private readonly EnvParamRegistry envParamRegistry;
     private readonly GenomeFactory genomeFactory;
     private readonly GenomeMutator genomeMutator;
-    private readonly GenomeMixer genomeMixer;
     private readonly ResourceSpawner resourceSpawner;
     private readonly IFarmClient farmClient;
     private readonly IMapProvider mapProvider;
@@ -25,19 +23,19 @@ public sealed class SimulationEngine
     public WorldMap Map { get; private set; } = null!;
     public IReadOnlyList<Bot> Bots => bots;
     public int GenerationNumber { get; private set; }
-    public int TickNumber { get; private set; }
+    public int GenTickNumber { get; private set; }
     public int InputSize => envParamRegistry.TotalSize;
     public int OutputSize => actionRegistry.TotalSize;
 
     public SimulationEngine(IslandConfig config, IInferenceService inferenceService, IMapProvider mapProvider)
     {
         Config = config;
-        random = new Random(config.RandomSeed);
+        random = config.RandomSeed.HasValue ? new Random(config.RandomSeed.Value) : new Random();
         actionRegistry = new ActionRegistry();
         envParamRegistry = new EnvParamRegistry(config, actionRegistry.TotalSize);
-        genomeFactory = new GenomeFactory(config, random);
-        genomeMutator = new GenomeMutator(config, random, genomeFactory);
-        genomeMixer = new GenomeMixer(genomeMutator, random);
+        var genomeComplexityCalculator = new GenomeComplexityCalculator(config);
+        genomeFactory = new GenomeFactory(config, random, genomeComplexityCalculator);
+        genomeMutator = new GenomeMutator(config, random, genomeFactory, genomeComplexityCalculator);
         resourceSpawner = new ResourceSpawner(config, random);
         farmClient = new FarmClient(inferenceService);
         this.mapProvider = mapProvider;
@@ -48,12 +46,12 @@ public sealed class SimulationEngine
         ResetWorld();
         bots.Clear();
         for (var index = 0; index < Config.GenerationSize; index++)
-            bots.Add(CreateBot(genomeFactory.CreateRandom(InputSize, OutputSize)));
+            bots.Add(CreateBot(genomeFactory.CreateNewGenome(InputSize, OutputSize)));
 
         PlaceBots(bots);
         resourceSpawner.Initialize(Map);
         GenerationNumber = 1;
-        TickNumber = 0;
+        GenTickNumber = 0;
     }
 
     public void RunTick()
@@ -67,7 +65,6 @@ public sealed class SimulationEngine
         {
             Random = random,
             AddBot = bot => bots.Add(bot),
-            CreateChild = CreateChild,
         };
 
         foreach (var bot in activeBots)
@@ -89,7 +86,7 @@ public sealed class SimulationEngine
                 Map.SetEntity(bot.Position.X, bot.Position.Y, null);
         }
 
-        TickNumber++;
+        GenTickNumber++;
         resourceSpawner.Update(Map);
         if (bots.Count(bot => bot.Alive) <= Config.SurvivorThreshold)
             ResetGeneration();
@@ -105,7 +102,7 @@ public sealed class SimulationEngine
         if (survivors.Length == 0)
         {
             for (var index = 0; index < Config.GenerationSize; index++)
-                bots.Add(CreateBot(genomeFactory.CreateRandom(InputSize, OutputSize)));
+                bots.Add(CreateBot(genomeFactory.CreateNewGenome(InputSize, OutputSize)));
         }
         else
         {
@@ -121,7 +118,7 @@ public sealed class SimulationEngine
         PlaceBots(bots);
         resourceSpawner.Initialize(Map);
         GenerationNumber++;
-        TickNumber = 0;
+        GenTickNumber = 0;
     }
 
     private void ResetWorld()
@@ -150,19 +147,7 @@ public sealed class SimulationEngine
     private Bot CreateBot(Genome genome) =>
         new(Point.Empty, (Direction)random.Next(8), Config.InitialBotEnergy, genome, OutputSize);
 
-    private Bot CreateChild(Bot firstParent, Bot secondParent) =>
-        new(
-            Point.Empty,
-            (Direction)random.Next(8),
-            Config.InitialBotEnergy,
-            genomeMixer.CreateChild(firstParent.Brain, secondParent.Brain),
-            OutputSize)
-        {
-            FirstParentId = firstParent.Id,
-            SecondParentId = secondParent.Id,
-        };
-
-    private float GetPassiveDrain(Bot bot) => Config.BasePassiveDrain + bot.Brain.Complexity * Config.ComplexityDrainFactor;
+    private float GetPassiveDrain(Bot bot) => bot.Brain.Complexity * Config.ComplexityDrainFactor;
 
     private void EnsureInitialized()
     {

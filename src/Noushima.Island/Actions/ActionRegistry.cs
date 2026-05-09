@@ -15,7 +15,6 @@ public sealed class ActionRegistry
             new PeelBotAction(),
             new EatBotAction(),
             new MoveBotAction(),
-            new ReproduceBotAction(),
         }
         .OrderBy(action => action.Order)
         .ToArray();

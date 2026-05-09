@@ -1,5 +1,4 @@
 using System.Drawing;
-using Noushima.Island.Config;
 using Noushima.Island.Entities;
 using Noushima.Island.Map;
 
