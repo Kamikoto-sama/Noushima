@@ -142,7 +142,8 @@ public sealed class SimulationEngine
             {
                 bots.Add(CreateBot(survivor.Brain.Clone()));
                 var template = survivor.Brain;
-                bots.Add(CreateBot(genomeMutator.Mutate(template, true)));
+                for (var i = 0; i < Config.GenerationSize / survivors.Length - 1; i++)
+                    bots.Add(CreateBot(genomeMutator.Mutate(template, true)));
             }
         }
 
@@ -171,7 +172,8 @@ public sealed class SimulationEngine
     {
         foreach (var bot in newBots)
         {
-            var cell = Map.GetRandomEmptyCell() ?? throw new InvalidOperationException("Map has no empty cells for bot placement.");
+            var cell = Map.GetRandomEmptyCell() ??
+                       throw new InvalidOperationException("Map has no empty cells for bot placement.");
             Map.SetEntity(cell.Position.X, cell.Position.Y, bot);
         }
     }
