@@ -14,6 +14,6 @@ public class GenomeComplexityCalculator(IslandConfig config)
             .Sum(l => l.Neurons.Sum(n => n.LinksCount)) * config.ComplexityLinksCountFactor;
 
         var complexity = (layersFactor + neuronsFactor + linksFactor) * config.ComplexityDrainFactor;
-        return (int)MathF.Round(complexity);
+        return (int)MathF.Ceiling(complexity);
     }
 }
