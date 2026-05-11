@@ -7,7 +7,7 @@ internal sealed class MoveBotAction() : DirectionalScalarAction("move")
 {
     public override int Order => 3;
 
-    public override float Cost => 1f;
+    public override float Cost => 0f;
 
     protected override void Execute(Bot bot, Direction relativeDirection, BotActionContext context)
     {
