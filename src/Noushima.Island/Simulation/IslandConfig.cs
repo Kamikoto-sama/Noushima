@@ -6,32 +6,32 @@ public sealed class IslandConfig
     public int GenerationSize { get; init; } = 64;
     public int SurvivorThreshold { get; init; } = 8;
 
-    public float InitialBotEnergy { get; init; } = 80f;
-    public float MaxBotEnergy { get; init; } = 120f;
+    public float InitialBotEnergy { get; init; } = 60f;
+    public float MaxBotEnergy { get; init; } = 1000f;
 
-    public float ComplexityDrainFactor { get; init; } = 0.5f;
-    public float ComplexityLayersCountFactor { get; init; } = 1f;
-    public float ComplexityNeuronsCountFactor { get; init; } = 0.5f;
-    public float ComplexityLinksCountFactor { get; init; } = 0.01f;
+    public float ComplexityDrainFactor { get; init; } = 0.3f;
+    public float ComplexityLayersCountFactor { get; init; } = 0.75f;
+    public float ComplexityNeuronsCountFactor { get; init; } = 0.35f;
+    public float ComplexityLinksCountFactor { get; init; } = 0.008f;
 
-    public int MaxFoodCount { get; init; } = 64;
-    public int MaxPoisonCount { get; init; } = 32;
+    public int MaxFoodCount { get; init; } = 50;
+    public int MaxPoisonCount { get; init; } = 50;
     public float SpawnChancePerTick { get; init; } = 1f;
-    public float FoodEnergyGain { get; init; } = 10f;
-    public float PoisonEnergyPenalty { get; init; } = 5f;
+    public float FoodEnergyGain { get; init; } = 200f;
+    public float PoisonEnergyPenalty { get; init; } = 600f;
 
     public int MinHiddenLayersCount { get; init; } = 1;
-    public int MaxHiddenLayersCount { get; init; } = 10;
+    public int MaxHiddenLayersCount { get; init; } = 8;
     public int MinHiddenLayerSize { get; init; } = 1;
-    public int MaxHiddenLayerSize { get; init; } = 32;
+    public int MaxHiddenLayerSize { get; init; } = 24;
 
     public float WeightMutationChance { get; init; } = 0.18f;
-    public float RemoveLinkChance { get; init; } = 0.02f;
+    public float RemoveLinkChance { get; init; } = 0f;
     public float BiasMutationChance { get; init; } = 0.18f;
-    public float AddNeuronChance { get; init; } = 0.15f;
-    public float AddLinkChance { get; init; } = 0.8f;
-    public float RemoveNeuronChance { get; init; } = 0.15f;
-    public float AddLayerChance { get; init; } = 0.08f;
-    public float RemoveLayerChance { get; init; } = 0.08f;
-    public float StrongMutationMultiplier { get; init; } = 1.75f;
+    public float AddNeuronChance { get; init; } = 1f;
+    public float AddLinkChance { get; init; } = 0f;
+    public float RemoveNeuronChance { get; init; } = 0f;
+    public float AddLayerChance { get; init; } = 0f;
+    public float RemoveLayerChance { get; init; } = 0f;
+    public float StrongMutationMultiplier { get; init; } = 1f;
 }

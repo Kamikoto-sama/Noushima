@@ -1,10 +1,11 @@
 const POLL_INTERVAL_MS = 150;
 const OFFLINE_POLL_INTERVAL_MS = 5000;
 const MIN_CELL_SIZE = 12;
-const MAX_CELL_SIZE = 40;
+const MAX_CELL_SIZE = 100;
 
 const generationValue = document.getElementById("generationValue");
 const botsAliveValue = document.getElementById("botsAliveValue");
+const bestEnergyValue = document.getElementById("bestEnergyValue");
 const canvas = document.getElementById("simulationCanvas");
 const context = canvas.getContext("2d");
 const speedUpToggle = document.getElementById("speedUpToggle");
@@ -12,12 +13,21 @@ const speedUpToggle = document.getElementById("speedUpToggle");
 let latestState = null;
 let pendingSpeedUpValue = null;
 
+function getBestEnergyText(state) {
+    const bestEnergy = state.bestEnergy ?? state.BestEnergy;
+    if (bestEnergy == null) {
+        return "-";
+    }
+
+    return String(Math.round(bestEnergy));
+}
+
 function getCellSize(state) {
     const totalCells = state.width * state.height;
     const availableWidth = window.innerWidth - 24;
     const availableHeight = window.innerHeight - 96;
     const viewportCellSize = Math.min(availableWidth / state.width, availableHeight / state.height);
-    const densityScale = Math.sqrt(364 / totalCells);
+    const densityScale = Math.sqrt(1000 / totalCells);
     const scaledCellSize = Math.floor(viewportCellSize * densityScale);
     return Math.max(MIN_CELL_SIZE, Math.min(MAX_CELL_SIZE, scaledCellSize));
 }
@@ -112,6 +122,7 @@ function drawBotDirection(cell, cellSize) {
 function drawState(state) {
     generationValue.textContent = String(state.generation);
     botsAliveValue.textContent = String(state.botsAlive);
+    bestEnergyValue.textContent = getBestEnergyText(state);
 
     const cellSize = resizeCanvas(state);
     drawGrid(state.width, state.height, cellSize);
@@ -155,6 +166,7 @@ function drawState(state) {
 function updateGeneration(state) {
     generationValue.textContent = String(state.generation);
     botsAliveValue.textContent = String(state.botsAlive);
+    bestEnergyValue.textContent = getBestEnergyText(state);
 }
 
 function syncSpeedUpToggle(enabled) {
@@ -210,6 +222,7 @@ async function pollState() {
     } catch (error) {
         generationValue.textContent = "offline";
         botsAliveValue.textContent = "-";
+        bestEnergyValue.textContent = "-";
         nextPollIntervalMs = OFFLINE_POLL_INTERVAL_MS;
         console.error(error);
     } finally {

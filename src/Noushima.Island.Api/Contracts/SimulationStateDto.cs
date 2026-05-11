@@ -6,6 +6,7 @@ public sealed class SimulationStateDto
 {
     public int Generation { get; init; }
     public int BotsAlive { get; init; }
+    public float BestEnergy { get; init; }
     public bool SpeedUpEnabled { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? Width { get; init; }

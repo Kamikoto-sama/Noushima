@@ -46,6 +46,7 @@ public sealed class SimulationStateProvider
         {
             Generation = snapshot.GenerationNumber,
             BotsAlive = snapshot.BotsAlive,
+            BestEnergy = snapshot.BestEnergy,
             SpeedUpEnabled = speedControl.IsEnabled,
             Width = width,
             Height = height,

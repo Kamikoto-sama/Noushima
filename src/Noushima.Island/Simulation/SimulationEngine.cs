@@ -22,10 +22,10 @@ public sealed class SimulationEngine
     private readonly object stateLock = new();
     private readonly List<Bot> bots = [];
     private bool initialized;
+    private float bestEnergy;
     private SimulationSnapshot? snapshot;
     public IslandConfig Config { get; }
     public WorldMap Map { get; private set; } = null!;
-    public IReadOnlyList<Bot> Bots => bots;
     public int GenerationNumber { get; private set; }
     public int GenTickNumber { get; private set; }
     public SimulationSnapshot? Snapshot => Volatile.Read(ref snapshot);
@@ -70,7 +70,7 @@ public sealed class SimulationEngine
 
     public void RunTick()
     {
-        lock (stateLock)
+        // lock (stateLock)
         {
             if (!initialized)
                 InitializeCore();
@@ -107,6 +107,7 @@ public sealed class SimulationEngine
 
             PublishSnapshot();
         }
+        
     }
 
     private void InitializeCore()
@@ -186,10 +187,11 @@ public sealed class SimulationEngine
     private void PublishSnapshot()
     {
         var botsAlive = bots.Count(bot => bot.Alive);
-
+        bestEnergy = MathF.Max(bestEnergy, GenTickNumber);
         if (speedControl.IsEnabled)
         {
-            Volatile.Write(ref snapshot, new SimulationSnapshot(Snapshot!.Map, GenerationNumber, botsAlive));
+            var simulationSnapshot = new SimulationSnapshot(Snapshot!.Map, GenerationNumber, botsAlive, bestEnergy);
+            Volatile.Write(ref snapshot, simulationSnapshot);
             return;
         }
 
@@ -216,6 +218,9 @@ public sealed class SimulationEngine
             }
         }
 
-        Volatile.Write(ref snapshot, new SimulationSnapshot(map, GenerationNumber, botsAlive));
+        {
+            var simulationSnapshot = new SimulationSnapshot(map, GenerationNumber, botsAlive, bestEnergy);
+            Volatile.Write(ref snapshot, simulationSnapshot);
+        }
     }
 }
