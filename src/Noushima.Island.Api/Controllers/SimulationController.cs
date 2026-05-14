@@ -18,19 +18,19 @@ public sealed class SimulationController(
         return Ok(state);
     }
 
-    [HttpGet("speed-up")]
-    public ActionResult<SimulationSpeedUpDto> GetSpeedUp()
+    [HttpGet("mode")]
+    public ActionResult<SimulationModeDto> GetMode()
     {
-        return Ok(new SimulationSpeedUpDto
+        return Ok(new SimulationModeDto
         {
-            Enabled = speedControl.IsEnabled,
+            Mode = speedControl.Mode,
         });
     }
 
-    [HttpPost("speed-up")]
-    public IActionResult SetSpeedUp([FromQuery] bool enabled)
+    [HttpPost("mode")]
+    public IActionResult SetMode([FromQuery] SimulationMode mode)
     {
-        speedControl.SetEnabled(enabled);
+        speedControl.SetMode(mode);
         return NoContent();
     }
 }

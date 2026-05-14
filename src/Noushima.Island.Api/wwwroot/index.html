@@ -21,15 +21,17 @@
                 <span class="hud-label">Best energy</span>
                 <strong id="bestEnergyValue">-</strong>
             </div>
-            <label class="toggle-control" for="speedUpToggle">
-                <input id="speedUpToggle" type="checkbox">
-                <span>Speed up</span>
-            </label>
+            <div class="mode-group" role="radiogroup" aria-label="Simulation speed">
+                <button type="button" class="mode-button" data-mode="Pause" role="radio" aria-checked="false">Pause</button>
+                <button type="button" class="mode-button" data-mode="Slow" role="radio" aria-checked="false">Slow</button>
+                <button type="button" class="mode-button" data-mode="Normal" role="radio" aria-checked="true">Normal</button>
+                <button type="button" class="mode-button" data-mode="Fast" role="radio" aria-checked="false">Fast</button>
+            </div>
         </section>
         <section class="map-frame" aria-label="Simulation map">
             <canvas id="simulationCanvas"></canvas>
         </section>
     </main>
-    <script src="/app.js"></script>
+    <script src="/app.js?v=2"></script>
 </body>
 </html>

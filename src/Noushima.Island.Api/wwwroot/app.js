@@ -8,10 +8,38 @@ const botsAliveValue = document.getElementById("botsAliveValue");
 const bestEnergyValue = document.getElementById("bestEnergyValue");
 const canvas = document.getElementById("simulationCanvas");
 const context = canvas.getContext("2d");
-const speedUpToggle = document.getElementById("speedUpToggle");
+const hud = document.querySelector(".hud");
+
+let modeGroup = document.querySelector(".mode-group");
+let modeButtons = Array.from(document.querySelectorAll(".mode-button"));
 
 let latestState = null;
-let pendingSpeedUpValue = null;
+let pendingModeValue = null;
+
+function ensureModeControls() {
+    if (modeGroup !== null) {
+        return;
+    }
+
+    modeGroup = document.createElement("div");
+    modeGroup.className = "mode-group";
+    modeGroup.setAttribute("role", "radiogroup");
+    modeGroup.setAttribute("aria-label", "Simulation speed");
+
+    for (const mode of ["Pause", "Slow", "Normal", "Fast"]) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "mode-button";
+        button.dataset.mode = mode;
+        button.setAttribute("role", "radio");
+        button.setAttribute("aria-checked", String(mode === "Normal"));
+        button.textContent = mode;
+        modeGroup.appendChild(button);
+    }
+
+    hud?.appendChild(modeGroup);
+    modeButtons = Array.from(modeGroup.querySelectorAll(".mode-button"));
+}
 
 function getBestEnergyText(state) {
     const bestEnergy = state.bestEnergy ?? state.BestEnergy;
@@ -169,13 +197,30 @@ function updateGeneration(state) {
     bestEnergyValue.textContent = getBestEnergyText(state);
 }
 
-function syncSpeedUpToggle(enabled) {
-    if (pendingSpeedUpValue !== null && enabled !== pendingSpeedUpValue) {
+function syncMode(mode) {
+    if (pendingModeValue !== null && mode !== pendingModeValue) {
         return;
     }
 
-    speedUpToggle.checked = enabled;
-    pendingSpeedUpValue = null;
+    for (const button of modeButtons) {
+        const selected = button.dataset.mode === mode;
+        button.setAttribute("aria-checked", String(selected));
+    }
+
+    pendingModeValue = null;
+    setModeBusy(false);
+}
+
+function setModeBusy(isBusy) {
+    if (modeGroup === null) {
+        return;
+    }
+
+    modeGroup.dataset.busy = String(isBusy);
+
+    for (const button of modeButtons) {
+        button.disabled = isBusy;
+    }
 }
 
 async function fetchState() {
@@ -187,8 +232,8 @@ async function fetchState() {
     return response.json();
 }
 
-async function fetchSpeedUpState() {
-    const response = await fetch("/api/simulation/speed-up", { cache: "no-store" });
+async function fetchModeState() {
+    const response = await fetch("/api/simulation/mode", { cache: "no-store" });
     if (!response.ok) {
         throw new Error(`Request failed with ${response.status}`);
     }
@@ -196,8 +241,8 @@ async function fetchSpeedUpState() {
     return response.json();
 }
 
-async function setSpeedUp(enabled) {
-    const response = await fetch(`/api/simulation/speed-up?enabled=${enabled}`, {
+async function setMode(mode) {
+    const response = await fetch(`/api/simulation/mode?mode=${encodeURIComponent(mode)}`, {
         method: "POST"
     });
 
@@ -211,7 +256,7 @@ async function pollState() {
 
     try {
         const state = await fetchState();
-        syncSpeedUpToggle(state.speedUpEnabled);
+        syncMode(state.mode ?? "Normal");
 
         if (state.cells != null && state.width != null && state.height != null) {
             latestState = state;
@@ -236,26 +281,37 @@ window.addEventListener("resize", () => {
     }
 });
 
-speedUpToggle.addEventListener("change", async () => {
-    const enabled = speedUpToggle.checked;
-    pendingSpeedUpValue = enabled;
-    speedUpToggle.disabled = true;
+ensureModeControls();
+
+modeGroup?.addEventListener("click", async event => {
+    const button = event.target.closest(".mode-button");
+    if (button == null || button.disabled) {
+        return;
+    }
+
+    const mode = button.dataset.mode;
+    if (mode == null) {
+        return;
+    }
+
+    pendingModeValue = mode;
+    syncMode(mode);
+    setModeBusy(true);
 
     try {
-        await setSpeedUp(enabled);
+        await setMode(mode);
     } catch (error) {
-        pendingSpeedUpValue = null;
-        speedUpToggle.checked = !enabled;
+        pendingModeValue = null;
+        setModeBusy(false);
+        syncMode(latestState?.mode ?? "Normal");
         console.error(error);
-    } finally {
-        speedUpToggle.disabled = false;
     }
 });
 
 async function initialize() {
     try {
-        const speedUpState = await fetchSpeedUpState();
-        speedUpToggle.checked = speedUpState.enabled;
+        const modeState = await fetchModeState();
+        syncMode(modeState.mode ?? "Normal");
     } catch (error) {
         console.error(error);
     }

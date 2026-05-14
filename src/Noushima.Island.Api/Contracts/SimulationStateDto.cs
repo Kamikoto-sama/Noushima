@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Noushima.Island.Simulation;
 
 namespace Noushima.Island.Api.Contracts;
 
@@ -7,7 +8,8 @@ public sealed class SimulationStateDto
     public int Generation { get; init; }
     public int BotsAlive { get; init; }
     public float BestEnergy { get; init; }
-    public bool SpeedUpEnabled { get; init; }
+    [JsonConverter(typeof(JsonStringEnumConverter<SimulationMode>))]
+    public SimulationMode Mode { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? Width { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -16,9 +18,10 @@ public sealed class SimulationStateDto
     public IReadOnlyList<CellDto>? Cells { get; init; }
 }
 
-public sealed class SimulationSpeedUpDto
+public sealed class SimulationModeDto
 {
-    public bool Enabled { get; init; }
+    [JsonConverter(typeof(JsonStringEnumConverter<SimulationMode>))]
+    public SimulationMode Mode { get; init; }
 }
 
 public sealed class CellDto

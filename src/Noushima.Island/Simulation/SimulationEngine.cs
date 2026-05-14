@@ -188,7 +188,7 @@ public sealed class SimulationEngine
     {
         var botsAlive = bots.Count(bot => bot.Alive);
         bestEnergy = MathF.Max(bestEnergy, GenTickNumber);
-        if (speedControl.IsEnabled)
+        if (speedControl.Mode == SimulationMode.Fast)
         {
             var simulationSnapshot = new SimulationSnapshot(Snapshot!.Map, GenerationNumber, botsAlive, bestEnergy);
             Volatile.Write(ref snapshot, simulationSnapshot);

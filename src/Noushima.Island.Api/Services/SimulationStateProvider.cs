@@ -47,7 +47,7 @@ public sealed class SimulationStateProvider
             Generation = snapshot.GenerationNumber,
             BotsAlive = snapshot.BotsAlive,
             BestEnergy = snapshot.BestEnergy,
-            SpeedUpEnabled = speedControl.IsEnabled,
+            Mode = speedControl.Mode,
             Width = width,
             Height = height,
             Cells = cells,
