@@ -6,6 +6,7 @@ namespace Noushima.Island.Api.Contracts;
 public sealed class SimulationStateDto
 {
     public int Generation { get; init; }
+    public float LongestGeneration { get; init; }
     public int BotsAlive { get; init; }
     public float BestEnergy { get; init; }
     [JsonConverter(typeof(JsonStringEnumConverter<SimulationMode>))]

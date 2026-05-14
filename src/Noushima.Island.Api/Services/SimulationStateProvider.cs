@@ -45,6 +45,7 @@ public sealed class SimulationStateProvider
         return new SimulationStateDto
         {
             Generation = snapshot.GenerationNumber,
+            LongestGeneration = snapshot.LongestGeneration,
             BotsAlive = snapshot.BotsAlive,
             BestEnergy = snapshot.BestEnergy,
             Mode = speedControl.Mode,

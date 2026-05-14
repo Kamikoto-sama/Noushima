@@ -22,7 +22,8 @@ public sealed class SimulationEngine
     private readonly List<Bot> bots = [];
     private bool initialized;
     private float bestEnergy;
-    private SimulationSnapshot? snapshot;
+    private float longestGeneration;
+    private SimulationSnapshot snapshot;
     public IslandConfig Config { get; }
     public WorldMap Map { get; private set; } = null!;
     public int GenerationNumber { get; private set; }
@@ -48,11 +49,7 @@ public sealed class SimulationEngine
         farmClient = new FarmClient(inferenceService);
         this.mapProvider = mapProvider;
         this.speedControl = speedControl;
-    }
-
-    public void Initialize()
-    {
-        InitializeCore();
+        snapshot = new SimulationSnapshot();
     }
 
     public void EnsureInitialized()
@@ -99,7 +96,6 @@ public sealed class SimulationEngine
             ResetGeneration();
 
         PublishSnapshot();
-        
     }
 
     private void InitializeCore()
@@ -179,14 +175,23 @@ public sealed class SimulationEngine
     private void PublishSnapshot()
     {
         var botsAlive = bots.Count(bot => bot.Alive);
-        bestEnergy = MathF.Max(bestEnergy, GenTickNumber);
-        if (speedControl.Mode == SimulationMode.Fast)
-        {
-            var simulationSnapshot = new SimulationSnapshot(Snapshot!.Map, GenerationNumber, botsAlive, bestEnergy);
-            Volatile.Write(ref snapshot, simulationSnapshot);
-            return;
-        }
+        bestEnergy = MathF.Max(bestEnergy, bots.Where(b => b.Alive).Max(b => b.Energy));
+        longestGeneration = MathF.Max(GenTickNumber, longestGeneration);
+        var map = speedControl.Mode == SimulationMode.Fast ? Snapshot!.Map : GetMapSnapshot();
 
+        var simulationSnapshot = new SimulationSnapshot
+        {
+            Map = map,
+            GenerationNumber = GenerationNumber,
+            LongestGeneration = longestGeneration,
+            BestEnergy = bestEnergy,
+            BotsAlive = botsAlive
+        };
+        Volatile.Write(ref snapshot, simulationSnapshot);
+    }
+
+    private CellSnapshot[,] GetMapSnapshot()
+    {
         var width = Map.Width;
         var height = Map.Height;
         var map = new CellSnapshot[width, height];
@@ -210,9 +215,6 @@ public sealed class SimulationEngine
             }
         }
 
-        {
-            var simulationSnapshot = new SimulationSnapshot(map, GenerationNumber, botsAlive, bestEnergy);
-            Volatile.Write(ref snapshot, simulationSnapshot);
-        }
+        return map;
     }
 }

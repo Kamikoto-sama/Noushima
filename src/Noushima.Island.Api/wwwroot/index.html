@@ -4,22 +4,28 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Noushima Island</title>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/styles.css?v=3">
 </head>
 <body>
     <main class="app-shell">
         <section class="hud" aria-live="polite">
-            <div class="hud-group">
-                <span class="hud-label">Generation</span>
-                <strong id="generationValue">-</strong>
+            <div class="hud-group" data-tip="The current simulation round. It increases when a new population starts.">
+                <div class="hud-heading">
+                    <span class="hud-label">Generation</span>
+                </div>
+                <strong id="generationValue" class="hud-value">-</strong>
             </div>
-            <div class="hud-group">
-                <span class="hud-label">Bots alive</span>
-                <strong id="botsAliveValue">-</strong>
+            <div class="hud-group" data-tip="The highest lifespan reached by any generation so far before it ended.">
+                <div class="hud-heading">
+                    <span class="hud-label">Longest generation</span>
+                </div>
+                <strong id="longestGenerationValue" class="hud-value">-</strong>
             </div>
-            <div class="hud-group">
-                <span class="hud-label">Best energy</span>
-                <strong id="bestEnergyValue">-</strong>
+            <div class="hud-group" data-tip="How many bots are still alive in the current generation right now.">
+                <div class="hud-heading">
+                    <span class="hud-label">Bots alive</span>
+                </div>
+                <strong id="botsAliveValue" class="hud-value">-</strong>
             </div>
             <div class="mode-group" role="radiogroup" aria-label="Simulation speed">
                 <button type="button" class="mode-button" data-mode="Pause" role="radio" aria-checked="false">Pause</button>
@@ -30,8 +36,11 @@
         </section>
         <section class="map-frame" aria-label="Simulation map">
             <canvas id="simulationCanvas"></canvas>
+            <div id="fastModeOverlay" class="map-overlay" hidden>
+                <span class="map-overlay-message">Map rendering is suspended in Fast mode</span>
+            </div>
         </section>
     </main>
-    <script src="/app.js?v=2"></script>
+    <script src="/app.js?v=4"></script>
 </body>
 </html>

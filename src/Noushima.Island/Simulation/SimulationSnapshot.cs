@@ -2,12 +2,13 @@ using Noushima.Island.Map;
 
 namespace Noushima.Island.Simulation;
 
-public sealed class SimulationSnapshot(CellSnapshot[,] map, int generationNumber, int botsAlive, float bestEnergy)
+public sealed class SimulationSnapshot
 {
-    public CellSnapshot[,] Map { get; } = map;
-    public int GenerationNumber { get; } = generationNumber;
-    public int BotsAlive { get; } = botsAlive;
-    public float BestEnergy { get; } = bestEnergy;
+    public CellSnapshot[,] Map { get; init; } = new CellSnapshot[0,0];
+    public int GenerationNumber { get; init; }
+    public float LongestGeneration { get; init; }
+    public int BotsAlive { get; init; }
+    public float BestEnergy { get; init; }
 }
 
 public sealed class CellSnapshot

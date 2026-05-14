@@ -4,11 +4,12 @@ const MIN_CELL_SIZE = 12;
 const MAX_CELL_SIZE = 100;
 
 const generationValue = document.getElementById("generationValue");
+const longestGenerationValue = document.getElementById("longestGenerationValue");
 const botsAliveValue = document.getElementById("botsAliveValue");
-const bestEnergyValue = document.getElementById("bestEnergyValue");
 const canvas = document.getElementById("simulationCanvas");
 const context = canvas.getContext("2d");
 const hud = document.querySelector(".hud");
+const fastModeOverlay = document.getElementById("fastModeOverlay");
 
 let modeGroup = document.querySelector(".mode-group");
 let modeButtons = Array.from(document.querySelectorAll(".mode-button"));
@@ -48,6 +49,15 @@ function getBestEnergyText(state) {
     }
 
     return String(Math.round(bestEnergy));
+}
+
+function getLongestGenerationText(state) {
+    const longestGeneration = state.longestGeneration ?? state.LongestGeneration;
+    if (longestGeneration == null) {
+        return "-";
+    }
+
+    return String(Math.round(longestGeneration));
 }
 
 function getCellSize(state) {
@@ -149,8 +159,8 @@ function drawBotDirection(cell, cellSize) {
 
 function drawState(state) {
     generationValue.textContent = String(state.generation);
+    longestGenerationValue.textContent = getLongestGenerationText(state);
     botsAliveValue.textContent = String(state.botsAlive);
-    bestEnergyValue.textContent = getBestEnergyText(state);
 
     const cellSize = resizeCanvas(state);
     drawGrid(state.width, state.height, cellSize);
@@ -193,14 +203,24 @@ function drawState(state) {
 
 function updateGeneration(state) {
     generationValue.textContent = String(state.generation);
+    longestGenerationValue.textContent = getLongestGenerationText(state);
     botsAliveValue.textContent = String(state.botsAlive);
-    bestEnergyValue.textContent = getBestEnergyText(state);
+}
+
+function setMapSuspended(isSuspended) {
+    if (fastModeOverlay === null) {
+        return;
+    }
+
+    fastModeOverlay.hidden = !isSuspended;
 }
 
 function syncMode(mode) {
     if (pendingModeValue !== null && mode !== pendingModeValue) {
         return;
     }
+
+    setMapSuspended(mode === "Fast");
 
     for (const button of modeButtons) {
         const selected = button.dataset.mode === mode;
@@ -266,8 +286,8 @@ async function pollState() {
         }
     } catch (error) {
         generationValue.textContent = "offline";
+        longestGenerationValue.textContent = "-";
         botsAliveValue.textContent = "-";
-        bestEnergyValue.textContent = "-";
         nextPollIntervalMs = OFFLINE_POLL_INTERVAL_MS;
         console.error(error);
     } finally {
