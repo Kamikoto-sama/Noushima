@@ -19,7 +19,6 @@ public sealed class SimulationEngine
     private readonly IFarmClient farmClient;
     private readonly IMapProvider mapProvider;
     private readonly SimulationSpeedControl speedControl;
-    private readonly object stateLock = new();
     private readonly List<Bot> bots = [];
     private bool initialized;
     private float bestEnergy;
@@ -53,60 +52,53 @@ public sealed class SimulationEngine
 
     public void Initialize()
     {
-        lock (stateLock)
-            InitializeCore();
+        InitializeCore();
     }
 
     public void EnsureInitialized()
     {
-        lock (stateLock)
-        {
-            if (initialized)
-                return;
+        if (initialized)
+            return;
 
-            InitializeCore();
-        }
+        InitializeCore();
     }
 
     public void RunTick()
     {
-        // lock (stateLock)
+        if (!initialized)
+            InitializeCore();
+
+        var activeBots = bots.Where(bot => bot.Alive).OrderBy(bot => bot.Id).ToArray();
+        foreach (var bot in activeBots)
+            bot.BeginTurn();
+
+        var context = new BotActionContext(Map, Config);
+
+        foreach (var bot in activeBots)
         {
-            if (!initialized)
-                InitializeCore();
+            var input = envParamRegistry.Build(bot, Map);
+            var intentions = farmClient.Infer(bot.Brain, input);
+            bot.SetIntentions(intentions);
 
-            var activeBots = bots.Where(bot => bot.Alive).OrderBy(bot => bot.Id).ToArray();
-            foreach (var bot in activeBots)
-                bot.BeginTurn();
+            actionRegistry.Execute(bot, intentions, context);
 
-            var context = new BotActionContext(Map, Config);
-
-            foreach (var bot in activeBots)
+            bot.ChangeEnergy(-GetPassiveDrain(bot), Config.MaxBotEnergy);
+            if (!bot.Alive)
             {
-                var input = envParamRegistry.Build(bot, Map);
-                var intentions = farmClient.Infer(bot.Brain, input);
-                bot.SetIntentions(intentions);
-
-                actionRegistry.Execute(bot, intentions, context);
-
-                bot.ChangeEnergy(-GetPassiveDrain(bot), Config.MaxBotEnergy);
-                if (!bot.Alive)
-                {
-                    Map.SetEntity(bot.Position.X, bot.Position.Y, null);
-                    continue;
-                }
-
-                if (!bot.Alive)
-                    Map.SetEntity(bot.Position.X, bot.Position.Y, null);
+                Map.SetEntity(bot.Position.X, bot.Position.Y, null);
+                continue;
             }
 
-            GenTickNumber++;
-            resourceSpawner.Update(Map);
-            if (bots.Count(bot => bot.Alive) <= Config.SurvivorThreshold)
-                ResetGeneration();
-
-            PublishSnapshot();
+            if (!bot.Alive)
+                Map.SetEntity(bot.Position.X, bot.Position.Y, null);
         }
+
+        GenTickNumber++;
+        resourceSpawner.Update(Map);
+        if (bots.Count(bot => bot.Alive) <= Config.SurvivorThreshold)
+            ResetGeneration();
+
+        PublishSnapshot();
         
     }
 
